@@ -3,7 +3,7 @@
 
 #include "core/object/ref_counted.h"
 #include "core/object/object.h"
-#include "thirdParty/miniaudio/miniaudio.h"
+#include "thirdparty/miniaudio/miniaudio.h"
 
 class TQAudio : public Object
 {

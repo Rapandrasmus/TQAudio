@@ -3,8 +3,8 @@
 #define MA_NO_VORBIS
 #define MINIAUDIO_IMPLEMENTATION
 #define MA_DEBUG_OUTPUT
-#include "thirdParty/miniaudio/miniaudio.h"
-#include "thirdParty/miniaudio/extras/miniaudio_libvorbis.h"
+#include "thirdparty/miniaudio/miniaudio.h"
+#include "thirdparty/miniaudio/extras/miniaudio_libvorbis.h"
 #include "core/os/os.h"
 #include "tqaudio_macros.h"
 
