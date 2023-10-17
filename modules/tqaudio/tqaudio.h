@@ -2,7 +2,7 @@
 #define TQAUDIO_H
 
 #include "core/object/ref_counted.h"
-#include "miniaudio.h"
+#include "thirdParty/miniaudio/miniaudio.h"
 
 class TQAudio : public RefCounted
 {
@@ -14,7 +14,6 @@ class TQAudio : public RefCounted
 		ma_device *device;
 
 	public:
-		ma_result play_sound(String p_file);
 		TQAudio();
 		~TQAudio();
 };

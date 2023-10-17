@@ -1,7 +1,7 @@
 #include "tqaudio.h"
 
 #define MINIAUDIO_IMPLEMENTATION
-#include "miniaudio.h"
+#include "thirdParty/miniaudio/miniaudio.h"
 
 void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount)
 {
@@ -10,14 +10,9 @@ void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uin
     // frameCount frames.
 }
 
-ma_result TQAudio::play_sound(String p_file) 
-{
-    return ma_engine_play_sound(engine, p_file.utf8().get_data(), NULL);
-}
-
 void TQAudio::_bind_methods()
 {
-    ClassDB::bind_method(D_METHOD("play_sound", "file"), &TQAudio::play_sound);
+    
 }
 
 //Just testing miniaudio rn, make this shit better when i figure out what the hell i am doing
