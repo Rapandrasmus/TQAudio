@@ -14,7 +14,7 @@ class TQAudio : public RefCounted
 		ma_device *device;
 
 	public:
-		void play_sound(String p_file);
+		ma_result play_sound(String p_file);
 		TQAudio();
 		~TQAudio();
 };

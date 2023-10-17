@@ -10,10 +10,9 @@ void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uin
     // frameCount frames.
 }
 
-void TQAudio::play_sound(String p_file) 
+ma_result TQAudio::play_sound(String p_file) 
 {
-    ma_result result = ma_engine_play_sound(engine, p_file.utf8().get_data(), NULL);
-    printf((char*)result);
+    return ma_engine_play_sound(engine, p_file.utf8().get_data(), NULL);
 }
 
 void TQAudio::_bind_methods()
