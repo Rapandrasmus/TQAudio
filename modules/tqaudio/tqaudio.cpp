@@ -12,7 +12,8 @@ void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uin
 
 void TQAudio::play_sound(String p_file) 
 {
-    ma_engine_play_sound(engine, p_file.utf8().get_data(), NULL);
+    ma_result result = ma_engine_play_sound(engine, p_file.utf8().get_data(), NULL);
+    printf((char*)result);
 }
 
 void TQAudio::_bind_methods()
