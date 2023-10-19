@@ -8,6 +8,8 @@
 #include "core/os/os.h"
 #include "tqaudio_macros.h"
 
+TQAudio *TQAudio::singleton = nullptr;
+
 void TQAudio::_bind_methods()
 {
     
