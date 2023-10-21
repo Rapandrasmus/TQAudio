@@ -35,6 +35,7 @@ class TQAudio : public Object
 
 		Error initialize(ma_backend forced_backend);
 		Error godot_initialize();
+		Error play_one_shot_sound();
 
 		TQAudio();
 		~TQAudio();

@@ -12,7 +12,8 @@ TQAudio *TQAudio::singleton = nullptr;
 
 void TQAudio::_bind_methods()
 {
-    
+    ClassDB::bind_method(D_METHOD("initialize"), &TQAudio::godot_initialize);
+	ClassDB::bind_method(D_METHOD("play_one_shot_sound"), &TQAudio::play_one_shot_sound);
 }
 
 static ma_result ma_decoding_backend_init__libvorbis(void* pUserData, ma_read_proc onRead, ma_seek_proc onSeek, ma_tell_proc onTell, void* pReadSeekTellUserData, const ma_decoding_backend_config* pConfig, const ma_allocation_callbacks* pAllocationCallbacks, ma_data_source** ppBackend)
@@ -99,6 +100,12 @@ void TQAudio::ma_data_callback(ma_device *pDevice, void *pOutput, const void *pI
 		ma_engine_read_pcm_frames(&tqaudio->engine, pOutput, frameCount, NULL);
 		//tqaudio->clock->measure();
 	}
+}
+
+Error TQAudio::play_one_shot_sound() 
+{
+	if (!initialized) return OK;
+
 }
 
 ma_backend TQAudio::string_to_backend(String str) {
