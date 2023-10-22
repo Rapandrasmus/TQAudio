@@ -5,6 +5,8 @@
 #include <vector>
 
 #include "core/object/object.h"
+#include "core/templates/safe_refcount.h"
+#include "core/object/ref_counted.h"
 #include "thirdparty/miniaudio/miniaudio.h"
 #include "tqaudio_source.h"
 #include "tqaudio_group.h"
@@ -41,7 +43,6 @@ class TQAudio : public Object
 
 	public:
 		_FORCE_INLINE_ static TQAudio *get_singleton() { return singleton; }
-		_FORCE_INLINE_ static uint64_t get_inc_sound_source_uid() { return sound_source_uid.postincrement(); };
 
 		Ref<TQAudioClock> get_clock();
 		ma_engine *get_engine();
@@ -53,6 +54,8 @@ class TQAudio : public Object
 
 		Error initialize(ma_backend forced_backend);
 		Error godot_initialize();
+
+		_FORCE_INLINE_ static uint64_t get_inc_sound_source_uid() { return sound_source_uid.postincrement(); };
 
 		void set_desired_buffer_size_msec(uint64_t m_new_buffer_size);
 		uint64_t get_desired_buffer_size_msec() const;
