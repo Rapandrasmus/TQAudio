@@ -11,6 +11,10 @@ void initialize_tqaudio_module(ModuleInitializationLevel p_level)
     {
         return;
     }
+    GDREGISTER_ABSTRACT_CLASS(TQAudioPlayer)
+    GDREGISTER_ABSTRACT_CLASS(TQAudioSource);
+	GDREGISTER_ABSTRACT_CLASS(TQAudioSourceMemory);
+	GDREGISTER_ABSTRACT_CLASS(TQAudioGroup);
     GDREGISTER_CLASS(TQAudio);
     tqaudio_ptr = memnew(TQAudio);
     Engine::get_singleton()->add_singleton(Engine::Singleton("TQAudio", TQAudio::get_singleton()));

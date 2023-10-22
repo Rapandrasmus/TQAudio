@@ -3,7 +3,10 @@ import methods
 
 sources = [
     "register_types.cpp",
-    "tqaudio.cpp"
+    "tqaudio.cpp",
+    "tqaudio_source.cpp",
+    "tqaudio_player.cpp",
+    "tqaudio_group.cpp"
 ]
 
 module_env = env.Clone()

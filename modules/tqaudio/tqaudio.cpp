@@ -12,8 +12,18 @@ TQAudio *TQAudio::singleton = nullptr;
 
 void TQAudio::_bind_methods()
 {
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "master_volume"), "set_master_volume", "get_master_volume");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "desired_buffer_size_msec"), "set_desired_buffer_size_msec", "get_desired_buffer_size_msec");
+	
+	ClassDB::bind_method(D_METHOD("set_dsp_time", "new_time"), &TQAudio::set_dsp_time);
+	ClassDB::bind_method(D_METHOD("get_dsp_time"), &TQAudio::get_dsp_time);
+	ClassDB::bind_method(D_METHOD("get_actual_buffer_size"), &TQAudio::get_actual_buffer_size);
+	ClassDB::bind_method(D_METHOD("get_current_backend_name"), &TQAudio::get_current_backend_name);
+
+	ClassDB::bind_method(D_METHOD("create_group", "group_name", "parent_group"), &TQAudio::create_group);
     ClassDB::bind_method(D_METHOD("initialize"), &TQAudio::godot_initialize);
-	ClassDB::bind_method(D_METHOD("play_one_shot_sound"), &TQAudio::play_one_shot_sound);
+	ClassDB::bind_method(D_METHOD("get_initialization_error"), &TQAudio::get_initialization_error);
+	ClassDB::bind_method(D_METHOD("register_sound_from_memory", "name_hint", "data"), &TQAudio::register_sound_from_memory);
 }
 
 static ma_result ma_decoding_backend_init__libvorbis(void* pUserData, ma_read_proc onRead, ma_seek_proc onSeek, ma_tell_proc onTell, void* pReadSeekTellUserData, const ma_decoding_backend_config* pConfig, const ma_allocation_callbacks* pAllocationCallbacks, ma_data_source** ppBackend)
@@ -98,14 +108,18 @@ void TQAudio::ma_data_callback(ma_device *pDevice, void *pOutput, const void *pI
 	TQAudio *tqaudio = (TQAudio *)pDevice->pUserData;
 	if (tqaudio != NULL) {
 		ma_engine_read_pcm_frames(&tqaudio->engine, pOutput, frameCount, NULL);
-		//tqaudio->clock->measure();
+		tqaudio->clock->measure();
 	}
 }
 
-Error TQAudio::play_one_shot_sound() 
-{
-	if (!initialized) return OK;
+Ref<TQAudioSourceMemory> TQAudio::register_sound_from_memory(String m_name_hint, PackedByteArray m_data) {
+	return memnew(TQAudioSourceMemory(m_name_hint, m_data));
+}
 
+Ref<TQAudioGroup> TQAudio::create_group(String m_group_name, Ref<TQAudioGroup> m_parent_group) {
+	Ref<TQAudioGroup> out_group = memnew(TQAudioGroup(m_group_name, m_parent_group));
+	groups.push_back(out_group);
+	return out_group;
 }
 
 ma_backend TQAudio::string_to_backend(String str) {
@@ -162,7 +176,7 @@ Error TQAudio::initialize(ma_backend forced_backend) {
 		}
 	}
 
-	//clock->measure();
+	clock->measure();
 
 	ma_result result;
 
@@ -236,9 +250,57 @@ Error TQAudio::initialize(ma_backend forced_backend) {
 	return OK;
 }
 
+ma_engine *TQAudio::get_engine() 
+{
+	return &engine;
+}
+
+Ref<TQAudioClock> TQAudio::get_clock() 
+{
+	return clock;
+}
+
 TQAudio::TQAudio() 
 {
+	clock.instantiate();
     singleton = this;
+	sound_source_uid.set(0);
+}
+
+void TQAudio::set_desired_buffer_size_msec(uint64_t m_new_buffer_size) {
+	desired_buffer_size_msec = m_new_buffer_size;
+}
+
+uint64_t TQAudio::get_desired_buffer_size_msec() const {
+	return desired_buffer_size_msec;
+}
+
+Error TQAudio::set_master_volume(float m_linear_volume) {
+	MA_ERR_RET(ma_engine_set_volume(&engine, m_linear_volume), "Error setting volume");
+	return OK;
+}
+
+float TQAudio::get_master_volume() {
+	ma_node *endpoint = ma_engine_get_endpoint(&engine);
+	return ma_node_get_output_bus_volume(endpoint, 0);
+}
+
+uint64_t TQAudio::get_dsp_time() const {
+	return ma_engine_get_time(&engine) / (float)(ma_engine_get_sample_rate(&engine) / 1000.0f);
+}
+
+Error TQAudio::set_dsp_time(uint64_t m_new_time_msec) {
+	ma_result result = ma_engine_set_time(&engine, m_new_time_msec * (float)(ma_engine_get_sample_rate(&engine) / 1000.0f));
+	MA_ERR_RET(result, "Error setting DSP time");
+	return OK;
+}
+
+String TQAudio::get_current_backend_name() const {
+	return ma_get_backend_name(context.backend);
+}
+
+uint64_t TQAudio::get_actual_buffer_size() const {
+	return device.playback.internalPeriodSizeInFrames / (double)(device.playback.internalSampleRate / 1000.0);
 }
 
 TQAudio::~TQAudio() 
