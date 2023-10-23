@@ -9,6 +9,7 @@
 #include "tqaudio_macros.h"
 
 TQAudio *TQAudio::singleton = nullptr;
+SafeNumeric<uint64_t> TQAudio::sound_source_uid;
 
 void TQAudio::_bind_methods()
 {
