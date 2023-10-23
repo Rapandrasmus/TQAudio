@@ -13,6 +13,11 @@ SafeNumeric<uint64_t> TQAudio::sound_source_uid;
 
 void TQAudio::_bind_methods()
 {
+	ClassDB::bind_method(D_METHOD("set_desired_buffer_size_msec", "desired_buffer_size"), &TQAudio::set_desired_buffer_size_msec);
+	ClassDB::bind_method(D_METHOD("get_desired_buffer_size_msec"), &TQAudio::get_desired_buffer_size_msec);
+	ClassDB::bind_method(D_METHOD("set_master_volume", "linear_volume"), &TQAudio::set_master_volume);
+	ClassDB::bind_method(D_METHOD("get_master_volume"), &TQAudio::get_master_volume);
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "master_volume"), "set_master_volume", "get_master_volume");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "desired_buffer_size_msec"), "set_desired_buffer_size_msec", "get_desired_buffer_size_msec");
 	
@@ -27,6 +32,7 @@ void TQAudio::_bind_methods()
 	ClassDB::bind_method(D_METHOD("register_sound_from_memory", "name_hint", "data"), &TQAudio::register_sound_from_memory);
 }
 
+#pragma region vorbis decoder junk
 static ma_result ma_decoding_backend_init__libvorbis(void* pUserData, ma_read_proc onRead, ma_seek_proc onSeek, ma_tell_proc onTell, void* pReadSeekTellUserData, const ma_decoding_backend_config* pConfig, const ma_allocation_callbacks* pAllocationCallbacks, ma_data_source** ppBackend)
 {
     ma_result result;
@@ -100,6 +106,7 @@ static ma_decoding_backend_vtable g_ma_decoding_backend_vtable_libvorbis =
     NULL, /* onInitMemory() */
     ma_decoding_backend_uninit__libvorbis
 };
+#pragma endregion
 
 String TQAudio::get_initialization_error() const {
 	return "";
