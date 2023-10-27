@@ -49,7 +49,7 @@ class TQAudio : public Object
 
 		String get_initialization_error() const;
 
-		Ref<TQAudioSourceMemory> register_sound_from_memory(String m_name_hint, PackedByteArray m_data);
+		Ref<TQAudioSourceMemory> register_sound_from_memory(String m_name_hint, PackedByteArray m_data, bool encoded);
 		Ref<TQAudioGroup> create_group(String m_group_name, Ref<TQAudioGroup> m_parent_group = nullptr);
 
 		Error initialize(ma_backend forced_backend);

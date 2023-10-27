@@ -43,11 +43,17 @@ Error TQAudioSourceMemory::instantiate_sound(Ref<TQAudioGroup> m_group, bool use
 	return OK;
 }
 
-TQAudioSourceMemory::TQAudioSourceMemory(String m_name, PackedByteArray m_in_data) :
+TQAudioSourceMemory::TQAudioSourceMemory(String m_name, PackedByteArray m_in_data, bool encoded) :
 		TQAudioSource(m_name) {
 	data = m_in_data;
 	ma_engine *engine = TQAudio::get_singleton()->get_engine();
 	name = vformat("%s_%d", name, TQAudio::get_singleton()->get_inc_sound_source_uid());
+
+	if (!encoded) 
+	{
+		result = ma_resource_manager_register_decoded_data(ma_engine_get_resource_manager(engine), name.utf8(), (void *)data.ptr(), data.size() / 2, ma_format_u8, ma_engine_get_channels(engine), ma_engine_get_sample_rate(engine));
+		return;
+	}
 	result = ma_resource_manager_register_encoded_data(ma_engine_get_resource_manager(engine), name.utf8(), (void *)data.ptr(), data.size());
 }
 

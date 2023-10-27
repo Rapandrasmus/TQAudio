@@ -29,7 +29,7 @@ void TQAudio::_bind_methods()
 	ClassDB::bind_method(D_METHOD("create_group", "group_name", "parent_group"), &TQAudio::create_group);
     ClassDB::bind_method(D_METHOD("initialize"), &TQAudio::godot_initialize);
 	ClassDB::bind_method(D_METHOD("get_initialization_error"), &TQAudio::get_initialization_error);
-	ClassDB::bind_method(D_METHOD("register_sound_from_memory", "name_hint", "data"), &TQAudio::register_sound_from_memory);
+	ClassDB::bind_method(D_METHOD("register_sound_from_memory", "name_hint", "data", "encoded"), &TQAudio::register_sound_from_memory);
 }
 
 #pragma region vorbis decoder junk
@@ -120,8 +120,8 @@ void TQAudio::ma_data_callback(ma_device *pDevice, void *pOutput, const void *pI
 	}
 }
 
-Ref<TQAudioSourceMemory> TQAudio::register_sound_from_memory(String m_name_hint, PackedByteArray m_data) {
-	return memnew(TQAudioSourceMemory(m_name_hint, m_data));
+Ref<TQAudioSourceMemory> TQAudio::register_sound_from_memory(String m_name_hint, PackedByteArray m_data, bool encoded) {
+	return memnew(TQAudioSourceMemory(m_name_hint, m_data, encoded));
 }
 
 Ref<TQAudioGroup> TQAudio::create_group(String m_group_name, Ref<TQAudioGroup> m_parent_group) {
