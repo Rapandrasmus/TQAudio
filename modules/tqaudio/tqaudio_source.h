@@ -10,6 +10,7 @@
 #include "core/string/ustring.h"
 #include "tqaudio_group.h"
 #include "tqaudio_player.h"
+#include "scene/resources/audio_stream_wav.h"
 
 class TQAudioPlayer;
 
@@ -36,17 +37,28 @@ class TQAudioSource : public RefCounted
         virtual ~TQAudioSource();
 };
 
-class TQAudioSourceMemory : public TQAudioSource
+class TQAudioSourceEncodedMemory : public TQAudioSource
 {
-    GDCLASS(TQAudioSourceMemory, TQAudioSource);
+    GDCLASS(TQAudioSourceEncodedMemory, TQAudioSource);
     PackedByteArray data;
 
     public:
         virtual Error instantiate_sound(Ref<TQAudioGroup> m_group, bool use_source_channel_count, ma_sound *p_sound) override;
-        TQAudioSourceMemory(String p_name, PackedByteArray p_in_data, bool encoded);
-        ~TQAudioSourceMemory();
+        TQAudioSourceEncodedMemory(String p_name, PackedByteArray p_in_data);
+        ~TQAudioSourceEncodedMemory();
         friend class TQAudioPlayer;
 };
 
+class TQAudioSourceDecodedMemory : public TQAudioSource
+{
+    GDCLASS(TQAudioSourceDecodedMemory, TQAudioSource);
+    PackedByteArray data;
+
+    public:
+        virtual Error instantiate_sound(Ref<TQAudioGroup> m_group, bool use_source_channel_count, ma_sound *p_sound) override;
+        TQAudioSourceDecodedMemory(String p_name, PackedByteArray p_in_data, ma_uint32 sample_rate, ma_uint32 channels, ma_format format);
+        ~TQAudioSourceDecodedMemory();
+        friend class TQAudioPlayer;
+};
 
 #endif

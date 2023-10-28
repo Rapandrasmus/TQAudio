@@ -26,7 +26,7 @@ TQAudioPlayer *TQAudioSource::instantiate(Ref<TQAudioGroup> m_group, bool m_use_
 
 TQAudioSource::~TQAudioSource(){};
 
-Error TQAudioSourceMemory::instantiate_sound(Ref<TQAudioGroup> m_group, bool use_source_channel_count, ma_sound *p_sound) {
+Error TQAudioSourceEncodedMemory::instantiate_sound(Ref<TQAudioGroup> m_group, bool use_source_channel_count, ma_sound *p_sound) {
 	ma_sound_config config = ma_sound_config_init();
 	config.pFilePath = name.utf8();
 	config.flags = config.flags | MA_SOUND_FLAG_NO_SPATIALIZATION;
@@ -43,21 +43,66 @@ Error TQAudioSourceMemory::instantiate_sound(Ref<TQAudioGroup> m_group, bool use
 	return OK;
 }
 
-TQAudioSourceMemory::TQAudioSourceMemory(String m_name, PackedByteArray m_in_data, bool encoded) :
-		TQAudioSource(m_name) {
+TQAudioSourceEncodedMemory::TQAudioSourceEncodedMemory(String m_name, PackedByteArray m_in_data) :
+TQAudioSource(m_name) 
+{
+	data = m_in_data;
+	ma_engine *engine = TQAudio::get_singleton()->get_engine();
+	name = vformat("%s_%d", name, TQAudio::get_singleton()->get_inc_sound_source_uid());
+	result = ma_resource_manager_register_encoded_data(ma_engine_get_resource_manager(engine), name.utf8(), (void *)data.ptr(), data.size());
+}
+
+TQAudioSourceEncodedMemory::~TQAudioSourceEncodedMemory() {
+	ma_engine *engine = TQAudio::get_singleton()->get_engine();
+	ma_resource_manager_unregister_data(ma_engine_get_resource_manager(engine), name.utf8());
+}
+
+Error TQAudioSourceDecodedMemory::instantiate_sound(Ref<TQAudioGroup> m_group, bool use_source_channel_count, ma_sound *p_sound) {
+	ma_sound_config config = ma_sound_config_init();
+	config.pFilePath = name.utf8();
+	config.flags = config.flags | MA_SOUND_FLAG_NO_SPATIALIZATION;
+	if (use_source_channel_count) {
+		config.flags = config.flags | MA_SOUND_FLAG_NO_DEFAULT_ATTACHMENT;
+		config.channelsOut = MA_SOUND_SOURCE_CHANNEL_COUNT;
+	} else {
+		config.pInitialAttachment = m_group->get_group();
+	}
+
+	ma_engine *engine = TQAudio::get_singleton()->get_engine();
+
+	MA_ERR_RET(ma_sound_init_ex(engine, &config, p_sound), "Error initializing sound");
+	return OK;
+}
+
+TQAudioSourceDecodedMemory::TQAudioSourceDecodedMemory(String m_name, PackedByteArray m_in_data, ma_uint32 sample_rate, ma_uint32 channels, ma_format format) :
+TQAudioSource(m_name)
+{
 	data = m_in_data;
 	ma_engine *engine = TQAudio::get_singleton()->get_engine();
 	name = vformat("%s_%d", name, TQAudio::get_singleton()->get_inc_sound_source_uid());
 
-	if (!encoded) 
+	ma_uint32 ma_bytes_per_pcm_frame;
+	switch (format) 
 	{
-		result = ma_resource_manager_register_decoded_data(ma_engine_get_resource_manager(engine), name.utf8(), (void *)data.ptr(), data.size() / 2, ma_format_u8, ma_engine_get_channels(engine), ma_engine_get_sample_rate(engine));
-		return;
+		case ma_format_u8:
+			ma_bytes_per_pcm_frame = 1;
+			break;
+		case ma_format_s16:
+			ma_bytes_per_pcm_frame = 2;
+			break;
+		case ma_format_s24:
+			ma_bytes_per_pcm_frame = 3;
+			break;
+		case ma_format_s32:
+		case ma_format_f32:
+			ma_bytes_per_pcm_frame = 4;
+			break;
 	}
-	result = ma_resource_manager_register_encoded_data(ma_engine_get_resource_manager(engine), name.utf8(), (void *)data.ptr(), data.size());
+
+	ma_resource_manager_register_decoded_data(ma_engine_get_resource_manager(engine), name.utf8(), (void *)data.ptr(), data.size() / (ma_bytes_per_pcm_frame * channels), format, channels, sample_rate);
 }
 
-TQAudioSourceMemory::~TQAudioSourceMemory() {
+TQAudioSourceDecodedMemory::~TQAudioSourceDecodedMemory() {
 	ma_engine *engine = TQAudio::get_singleton()->get_engine();
 	ma_resource_manager_unregister_data(ma_engine_get_resource_manager(engine), name.utf8());
 }
