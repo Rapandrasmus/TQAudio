@@ -56,20 +56,3 @@ TQAudioSourceEncodedMemory::~TQAudioSourceEncodedMemory() {
 	ma_engine *engine = TQAudio::get_singleton()->get_engine();
 	ma_resource_manager_unregister_data(ma_engine_get_resource_manager(engine), name.utf8());
 }
-
-Error TQAudioSourceDecodedMemory::instantiate_sound(Ref<TQAudioGroup> m_group, bool use_source_channel_count, ma_sound *p_sound) {
-	ma_sound_config config = ma_sound_config_init();
-	config.pFilePath = name.utf8();
-	config.flags = config.flags | MA_SOUND_FLAG_NO_SPATIALIZATION;
-	if (use_source_channel_count) {
-		config.flags = config.flags | MA_SOUND_FLAG_NO_DEFAULT_ATTACHMENT;
-		config.channelsOut = MA_SOUND_SOURCE_CHANNEL_COUNT;
-	} else {
-		config.pInitialAttachment = m_group->get_group();
-	}
-
-	ma_engine *engine = TQAudio::get_singleton()->get_engine();
-
-	MA_ERR_RET(ma_sound_init_ex(engine, &config, p_sound), "Error initializing sound");
-	return OK;
-}

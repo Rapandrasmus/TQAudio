@@ -14,7 +14,6 @@ void initialize_tqaudio_module(ModuleInitializationLevel p_level)
     GDREGISTER_ABSTRACT_CLASS(TQAudioPlayer)
     GDREGISTER_ABSTRACT_CLASS(TQAudioSource);
 	GDREGISTER_ABSTRACT_CLASS(TQAudioSourceEncodedMemory);
-    GDREGISTER_ABSTRACT_CLASS(TQAudioSourceDecodedMemory);
 	GDREGISTER_ABSTRACT_CLASS(TQAudioGroup);
     GDREGISTER_CLASS(TQAudio);
     tqaudio_ptr = memnew(TQAudio);
