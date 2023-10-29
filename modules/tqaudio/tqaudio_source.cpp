@@ -73,18 +73,3 @@ Error TQAudioSourceDecodedMemory::instantiate_sound(Ref<TQAudioGroup> m_group, b
 	MA_ERR_RET(ma_sound_init_ex(engine, &config, p_sound), "Error initializing sound");
 	return OK;
 }
-
-TQAudioSourceDecodedMemory::TQAudioSourceDecodedMemory(String m_name, PackedByteArray m_in_data, ma_uint32 sample_rate) :
-TQAudioSource(m_name)
-{
-	data = m_in_data;
-	ma_engine *engine = TQAudio::get_singleton()->get_engine();
-	name = vformat("%s_%d", name, TQAudio::get_singleton()->get_inc_sound_source_uid());
-
-	ma_resource_manager_register_decoded_data(ma_engine_get_resource_manager(engine), name.utf8(), (void *)data.ptr(), data.size() / 2, ma_format_s16, 2, sample_rate);
-}
-
-TQAudioSourceDecodedMemory::~TQAudioSourceDecodedMemory() {
-	ma_engine *engine = TQAudio::get_singleton()->get_engine();
-	ma_resource_manager_unregister_data(ma_engine_get_resource_manager(engine), name.utf8());
-}
