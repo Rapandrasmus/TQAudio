@@ -74,32 +74,14 @@ Error TQAudioSourceDecodedMemory::instantiate_sound(Ref<TQAudioGroup> m_group, b
 	return OK;
 }
 
-TQAudioSourceDecodedMemory::TQAudioSourceDecodedMemory(String m_name, PackedByteArray m_in_data, ma_uint32 sample_rate, ma_uint32 channels, ma_format format) :
+TQAudioSourceDecodedMemory::TQAudioSourceDecodedMemory(String m_name, PackedByteArray m_in_data, ma_uint32 sample_rate) :
 TQAudioSource(m_name)
 {
 	data = m_in_data;
 	ma_engine *engine = TQAudio::get_singleton()->get_engine();
 	name = vformat("%s_%d", name, TQAudio::get_singleton()->get_inc_sound_source_uid());
 
-	ma_uint32 ma_bytes_per_pcm_frame;
-	switch (format) 
-	{
-		case ma_format_u8:
-			ma_bytes_per_pcm_frame = 1;
-			break;
-		case ma_format_s16:
-			ma_bytes_per_pcm_frame = 2;
-			break;
-		case ma_format_s24:
-			ma_bytes_per_pcm_frame = 3;
-			break;
-		case ma_format_s32:
-		case ma_format_f32:
-			ma_bytes_per_pcm_frame = 4;
-			break;
-	}
-
-	ma_resource_manager_register_decoded_data(ma_engine_get_resource_manager(engine), name.utf8(), (void *)data.ptr(), data.size() / (ma_bytes_per_pcm_frame * channels), format, channels, sample_rate);
+	ma_resource_manager_register_decoded_data(ma_engine_get_resource_manager(engine), name.utf8(), (void *)data.ptr(), data.size() / 2, ma_format_s16, 2, sample_rate);
 }
 
 TQAudioSourceDecodedMemory::~TQAudioSourceDecodedMemory() {

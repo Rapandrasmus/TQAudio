@@ -56,7 +56,7 @@ class TQAudioSourceDecodedMemory : public TQAudioSource
 
     public:
         virtual Error instantiate_sound(Ref<TQAudioGroup> m_group, bool use_source_channel_count, ma_sound *p_sound) override;
-        TQAudioSourceDecodedMemory(String p_name, PackedByteArray p_in_data, ma_uint32 sample_rate, ma_uint32 channels, ma_format format);
+        TQAudioSourceDecodedMemory(String p_name, PackedByteArray p_in_data, ma_uint32 sample_rate);
         ~TQAudioSourceDecodedMemory();
         friend class TQAudioPlayer;
 };
