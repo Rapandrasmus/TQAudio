@@ -2813,7 +2813,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 				minfo.property_info = prop_info;
 
 				p_script->member_indices[name] = minfo;
-				p_script->members.insert(name);
+				p_script->members.insert(Variant());
 			} break;
 
 			case GDScriptParser::ClassNode::Member::FUNCTION: {
