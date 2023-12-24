@@ -17,8 +17,8 @@ class TQAudioPlayer : public Node
     ma_sound sound;
     String error_message;
 
-    uint64_t start_time_msec = 0;
-	uint64_t cached_length = -1;
+    double start_time_sec = 0.0;
+	double cached_length = -1.0;
 	// HACK-ish way of dealing with tree pauses
 	bool was_playing_before_pause = false;
 
@@ -32,25 +32,25 @@ class TQAudioPlayer : public Node
         void set_pitch_scale(float m_pitch_scale);
         float get_pitch_scale();
 
-        void schedule_start_time(uint64_t m_global_time_msec);
-        void schedule_stop_time(uint64_t m_global_time_msec);
+        void schedule_start_time(double m_global_time_sec);
+        void schedule_stop_time(double m_global_time_sec);
 
         int64_t get_playback_position_nsec();
-        int64_t get_playback_position_msec();
+        double get_playback_position_sec();
         bool is_at_stream_end() const;
         bool is_playing() const;
 
         void set_volume(float m_linear_volume);
         float get_volume() const;
-        Error seek(int64_t to_time_msec);
-        uint64_t get_length_msec();
+        Error seek(double to_time_sec);
+        double get_length_sec();
 
         void set_looping_enabled(bool m_looping);
         bool is_looping_enabled() const;
 
         Error connect_sound_to_group(Ref<TQAudioGroup> m_group);
 
-        void fade(int p_duration_ms, float p_volume_begin, float p_volume_end);
+        void fade(double p_duration_s, float p_volume_begin, float p_volume_end);
 
 	    uint64_t get_channel_count();
 

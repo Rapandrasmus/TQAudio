@@ -9,10 +9,10 @@ void TQAudioPlayer::_bind_methods()
 	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &TQAudioPlayer::set_pitch_scale);
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &TQAudioPlayer::get_pitch_scale);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale"), "set_pitch_scale", "get_pitch_scale");
-	ClassDB::bind_method(D_METHOD("schedule_start_time", "global_time_msec"), &TQAudioPlayer::schedule_start_time);
-	ClassDB::bind_method(D_METHOD("schedule_stop_time", "global_time_msec"), &TQAudioPlayer::schedule_stop_time);
+	ClassDB::bind_method(D_METHOD("schedule_start_time", "global_time_sec"), &TQAudioPlayer::schedule_start_time);
+	ClassDB::bind_method(D_METHOD("schedule_stop_time", "global_time_sec"), &TQAudioPlayer::schedule_stop_time);
 	ClassDB::bind_method(D_METHOD("get_playback_position_nsec"), &TQAudioPlayer::get_playback_position_nsec);
-	ClassDB::bind_method(D_METHOD("get_playback_position_msec"), &TQAudioPlayer::get_playback_position_msec);
+	ClassDB::bind_method(D_METHOD("get_playback_position_sec"), &TQAudioPlayer::get_playback_position_sec);
 	ClassDB::bind_method(D_METHOD("is_at_stream_end"), &TQAudioPlayer::is_at_stream_end);
 	ClassDB::bind_method(D_METHOD("is_playing"), &TQAudioPlayer::is_playing);
 	ClassDB::bind_method(D_METHOD("set_volume", "linear_volume"), &TQAudioPlayer::set_volume);
@@ -23,8 +23,8 @@ void TQAudioPlayer::_bind_methods()
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "looping_enabled"), "set_looping_enabled", "is_looping_enabled");
 	ClassDB::bind_method(D_METHOD("connect_sound_to_group", "group"), &TQAudioPlayer::connect_sound_to_group);
 	ClassDB::bind_method(D_METHOD("get_channel_count"), &TQAudioPlayer::get_channel_count);
-	ClassDB::bind_method(D_METHOD("seek", "to_time_msec"), &TQAudioPlayer::seek);
-	ClassDB::bind_method(D_METHOD("get_length_msec"), &TQAudioPlayer::get_length_msec);
+	ClassDB::bind_method(D_METHOD("seek", "to_time_sec"), &TQAudioPlayer::seek);
+	ClassDB::bind_method(D_METHOD("get_length_sec"), &TQAudioPlayer::get_length_sec);
 	ClassDB::bind_method(D_METHOD("fade", "fade_duration", "volume_begin", "volume_end"), &TQAudioPlayer::fade);
 }
 
@@ -39,20 +39,28 @@ Error TQAudioPlayer::stop() {
 }
 
 void TQAudioPlayer::set_pitch_scale(float m_pitch_scale) {
-	ma_sound_set_pitch(&sound, m_pitch_scale);
+	if (sound_source->get_is_pitchable()) {
+		ma_sound_set_pitch(&sound, m_pitch_scale);
+	}
 }
 
 float TQAudioPlayer::get_pitch_scale() {
-	return ma_sound_get_pitch(&sound);
+	if (sound_source->get_is_pitchable()) {
+		return ma_sound_get_pitch(&sound);
+	}
+
+	return 1.0f;
 }
 
-void TQAudioPlayer::schedule_start_time(uint64_t m_global_time_msec) {
-	start_time_msec = m_global_time_msec;
-	ma_sound_set_start_time_in_milliseconds(&sound, m_global_time_msec);
+void TQAudioPlayer::schedule_start_time(double m_global_time_sec) {
+	start_time_sec = m_global_time_sec;
+	ma_engine *engine = TQAudio::get_singleton()->get_engine();
+	ma_sound_set_start_time_in_pcm_frames(&sound, m_global_time_sec * ma_engine_get_sample_rate(engine));
 }
 
-void TQAudioPlayer::schedule_stop_time(uint64_t m_global_time_msec) {
-	ma_sound_set_stop_time_in_milliseconds(&sound, m_global_time_msec);
+void TQAudioPlayer::schedule_stop_time(double m_global_time_sec) {
+	ma_engine *engine = TQAudio::get_singleton()->get_engine();
+	ma_sound_set_stop_time_in_pcm_frames(&sound, m_global_time_sec * ma_engine_get_sample_rate(engine));
 }
 
 int64_t TQAudioPlayer::get_playback_position_nsec() {
@@ -74,7 +82,7 @@ int64_t TQAudioPlayer::get_playback_position_nsec() {
 	// seconds to nanoseconds = x * 1_000_000_000
 	// milliseconds to nanoseconds = x * 1_000_000
 	uint64_t dsp_time_nsec = (ma_engine_get_time(engine) * 1e+9) / ma_engine_get_sample_rate(engine);
-	uint64_t start_time_nsec = start_time_msec * 1e+6;
+	uint64_t start_time_nsec = start_time_sec * 1e+9;
 
 	if (!is_playing() && start_time_nsec > dsp_time_nsec) {
 		return dsp_time_nsec - start_time_nsec + out_pos;
@@ -87,8 +95,8 @@ int64_t TQAudioPlayer::get_playback_position_nsec() {
 	return out_pos;
 }
 
-int64_t TQAudioPlayer::get_playback_position_msec() {
-	return get_playback_position_nsec() / 1e+6;
+double TQAudioPlayer::get_playback_position_sec() {
+	return get_playback_position_nsec() / 1e+9;
 }
 
 bool TQAudioPlayer::is_at_stream_end() const {
@@ -126,8 +134,9 @@ Error TQAudioPlayer::connect_sound_to_group(Ref<TQAudioGroup> m_group) {
 	return OK;
 }
 
-void TQAudioPlayer::fade(int p_duration_ms, float p_volume_begin, float p_volume_end) {
-	ma_sound_set_fade_in_milliseconds(&sound, p_volume_begin, p_volume_end, p_duration_ms);
+void TQAudioPlayer::fade(double p_duration_s, float p_volume_begin, float p_volume_end) {
+	ma_engine *engine = TQAudio::get_singleton()->get_engine();
+	ma_sound_set_fade_in_pcm_frames(&sound, p_volume_begin, p_volume_end, p_duration_s * ma_engine_get_sample_rate(engine));
 }
 
 void TQAudioPlayer::_notification(int p_notification) {
@@ -146,19 +155,19 @@ void TQAudioPlayer::_notification(int p_notification) {
 	}
 }
 
-Error TQAudioPlayer::seek(int64_t to_time_msec) {
+Error TQAudioPlayer::seek(double to_time_sec) {
 	// Sound MUST be stopped before seeking or we crash
 	if (ma_sound_is_playing(&sound) == MA_TRUE) {
 		ma_sound_stop(&sound);
 	}
 	uint32_t sample_rate;
 	ma_sound_get_data_format(&sound, NULL, NULL, &sample_rate, NULL, 0);
-	ma_result result = ma_sound_seek_to_pcm_frame(&sound, MAX(0.0f, to_time_msec * (float)(sample_rate / 1000.0f)));
+	ma_result result = ma_sound_seek_to_pcm_frame(&sound, MAX(0.0, to_time_sec * (double)sample_rate));
 	MA_ERR_RET(result, "Error seeking sound");
 	return OK;
 }
 
-uint64_t TQAudioPlayer::get_length_msec() {
+double TQAudioPlayer::get_length_sec() {
 	if (cached_length != -1) {
 		return cached_length;
 	}
@@ -168,10 +177,9 @@ uint64_t TQAudioPlayer::get_length_msec() {
 	uint32_t sample_rate;
 	ma_format format;
 	ma_sound_get_data_format(&sound, &format, NULL, &sample_rate, NULL, 0);
-	p_length /= (float)(sample_rate / 1000.0f);
-	cached_length = p_length;
+	cached_length = p_length / (double)sample_rate;
 
-	return p_length;
+	return p_length / (double)sample_rate;
 }
 
 TQAudioPlayer::TQAudioPlayer(Ref<TQAudioSource> m_sound_source, Ref<TQAudioGroup> m_group, bool m_use_source_channel_count) {

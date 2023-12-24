@@ -49,7 +49,7 @@ class TQAudio : public Object
 
 		String get_initialization_error() const;
 
-		Ref<TQAudioSourceEncodedMemory> register_sound_from_encoded_memory(String m_name_hint, PackedByteArray m_data);
+		Ref<TQAudioSourceEncodedMemory> register_sound_from_encoded_memory(String m_name_hint, bool m_is_pitchable, PackedByteArray m_data);
 		Ref<TQAudioGroup> create_group(String m_group_name, Ref<TQAudioGroup> m_parent_group = nullptr);
 
 		Error initialize(ma_backend forced_backend);
@@ -63,8 +63,8 @@ class TQAudio : public Object
 		Error set_master_volume(float m_linear_volume);
 		float get_master_volume();
 
-		uint64_t get_dsp_time() const;
-		Error set_dsp_time(uint64_t m_new_time_msec);
+		double get_dsp_time() const;
+		Error set_dsp_time(double m_new_time_sec);
 
 		uint64_t get_actual_buffer_size() const;
 		String get_current_backend_name() const;

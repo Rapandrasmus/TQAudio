@@ -10,7 +10,6 @@
 #include "core/string/ustring.h"
 #include "tqaudio_group.h"
 #include "tqaudio_player.h"
-#include "scene/resources/audio_stream_wav.h"
 
 class TQAudioPlayer;
 
@@ -22,15 +21,16 @@ class TQAudioSource : public RefCounted
         String error_message;
         String name;
         ma_result result;
+        bool is_pitchable;
 
         static void _bind_methods();
     public:
         virtual const String get_name() const;
-
+        virtual const bool get_is_pitchable() const;
         virtual const ma_result get_result() const;
         TQAudioPlayer *instantiate(Ref<TQAudioGroup> m_group, bool m_use_source_channel_count = false);
 
-        TQAudioSource(String m_name);
+        TQAudioSource(String m_name, bool m_is_pitchable);
 
         virtual Error instantiate_sound(Ref<TQAudioGroup> m_group, bool use_source_channel_count, ma_sound *p_sound) = 0;
 
@@ -44,7 +44,7 @@ class TQAudioSourceEncodedMemory : public TQAudioSource
 
     public:
         virtual Error instantiate_sound(Ref<TQAudioGroup> m_group, bool use_source_channel_count, ma_sound *p_sound) override;
-        TQAudioSourceEncodedMemory(String p_name, PackedByteArray p_in_data);
+        TQAudioSourceEncodedMemory(String p_name, bool m_is_pitchable, PackedByteArray p_in_data);
         ~TQAudioSourceEncodedMemory();
         friend class TQAudioPlayer;
 };
