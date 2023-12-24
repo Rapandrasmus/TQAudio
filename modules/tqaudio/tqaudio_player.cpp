@@ -9,6 +9,9 @@ void TQAudioPlayer::_bind_methods()
 	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &TQAudioPlayer::set_pitch_scale);
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &TQAudioPlayer::get_pitch_scale);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale"), "set_pitch_scale", "get_pitch_scale");
+	ClassDB::bind_method(D_METHOD("set_pan", "pan"), &TQAudioPlayer::set_pan);
+	ClassDB::bind_method(D_METHOD("get_pan"), &TQAudioPlayer::get_pan);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pan"), "set_pan", "get_pan");
 	ClassDB::bind_method(D_METHOD("schedule_start_time", "global_time_sec"), &TQAudioPlayer::schedule_start_time);
 	ClassDB::bind_method(D_METHOD("schedule_stop_time", "global_time_sec"), &TQAudioPlayer::schedule_stop_time);
 	ClassDB::bind_method(D_METHOD("get_playback_position_nsec"), &TQAudioPlayer::get_playback_position_nsec);
@@ -50,6 +53,14 @@ float TQAudioPlayer::get_pitch_scale() {
 	}
 
 	return 1.0f;
+}
+
+void TQAudioPlayer::set_pan(float m_pan) {
+	ma_sound_set_pan(&sound, m_pan);
+}
+
+float TQAudioPlayer::get_pan() {
+	return ma_sound_get_pan(&sound);
 }
 
 void TQAudioPlayer::schedule_start_time(double m_global_time_sec) {

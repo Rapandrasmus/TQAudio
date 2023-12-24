@@ -32,6 +32,9 @@ class TQAudioPlayer : public Node
         void set_pitch_scale(float m_pitch_scale);
         float get_pitch_scale();
 
+        void set_pan(float m_pan);
+        float get_pan();
+
         void schedule_start_time(double m_global_time_sec);
         void schedule_stop_time(double m_global_time_sec);
 
