@@ -48,4 +48,20 @@ class TQAudioSourceEncodedMemory : public TQAudioSource
         ~TQAudioSourceEncodedMemory();
         friend class TQAudioPlayer;
 };
+
+class TQAudioSourceDecodedMemory : public TQAudioSource
+{
+    GDCLASS(TQAudioSourceDecodedMemory, TQAudioSource);
+    PackedByteArray data;
+    ma_uint64 frameCount;
+    ma_format format;
+    ma_uint32 channels;
+    ma_uint32 sampleRate;
+
+    public:
+        virtual Error instantiate_sound(Ref<TQAudioGroup> m_group, bool use_source_channel_count, ma_sound *p_sound) override;
+        TQAudioSourceDecodedMemory(String p_name, bool m_is_pitchable, PackedByteArray p_in_data, ma_uint64 m_frameCount, ma_format m_format, ma_uint32 m_channels, ma_uint32 m_sampleRate);
+        ~TQAudioSourceDecodedMemory();
+        friend class TQAudioPlayer;
+};
 #endif

@@ -69,3 +69,42 @@ TQAudioSourceEncodedMemory::~TQAudioSourceEncodedMemory() {
 	ma_engine *engine = TQAudio::get_singleton()->get_engine();
 	ma_resource_manager_unregister_data(ma_engine_get_resource_manager(engine), name.utf8());
 }
+
+Error TQAudioSourceDecodedMemory::instantiate_sound(Ref<TQAudioGroup> m_group, bool use_source_channel_count, ma_sound *p_sound) {
+	ma_sound_config config = ma_sound_config_init();
+	config.pFilePath = name.utf8();
+	if (is_pitchable)
+	{
+		config.flags = config.flags | MA_SOUND_FLAG_NO_SPATIALIZATION;
+	}
+	else
+	{
+		config.flags = config.flags | MA_SOUND_FLAG_NO_SPATIALIZATION | MA_SOUND_FLAG_NO_PITCH;
+	}
+	
+	if (use_source_channel_count) {
+		config.flags = config.flags | MA_SOUND_FLAG_NO_DEFAULT_ATTACHMENT;
+		config.channelsOut = MA_SOUND_SOURCE_CHANNEL_COUNT;
+	} else {
+		config.pInitialAttachment = m_group->get_group();
+	}
+
+	ma_engine *engine = TQAudio::get_singleton()->get_engine();
+
+	MA_ERR_RET(ma_sound_init_ex(engine, &config, p_sound), "Error initializing sound");
+	return OK;
+}
+
+TQAudioSourceDecodedMemory::TQAudioSourceDecodedMemory(String m_name, bool m_is_pitchable, PackedByteArray m_in_data, ma_uint64 m_frameCount, ma_format m_format, ma_uint32 m_channels, ma_uint32 m_sampleRate) :
+TQAudioSource(m_name, m_is_pitchable) 
+{
+	data = m_in_data;
+	ma_engine *engine = TQAudio::get_singleton()->get_engine();
+	name = vformat("%s_%d", name, TQAudio::get_singleton()->get_inc_sound_source_uid());
+	result = ma_resource_manager_register_decoded_data(ma_engine_get_resource_manager(engine), name.utf8(), (void *)data.ptr(), m_frameCount, m_format, m_channels, m_sampleRate);
+}
+
+TQAudioSourceDecodedMemory::~TQAudioSourceDecodedMemory() {
+	ma_engine *engine = TQAudio::get_singleton()->get_engine();
+	ma_resource_manager_unregister_data(ma_engine_get_resource_manager(engine), name.utf8());
+}
