@@ -21,6 +21,8 @@ void TQAudio::_bind_methods()
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "master_volume"), "set_master_volume", "get_master_volume");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "desired_buffer_size_msec"), "set_desired_buffer_size_msec", "get_desired_buffer_size_msec");
 	
+	ADD_SIGNAL(MethodInfo("audio_data_callback"));
+
 	ClassDB::bind_method(D_METHOD("set_dsp_time", "new_time"), &TQAudio::set_dsp_time);
 	ClassDB::bind_method(D_METHOD("get_dsp_time"), &TQAudio::get_dsp_time);
 	ClassDB::bind_method(D_METHOD("get_actual_buffer_size"), &TQAudio::get_actual_buffer_size);
@@ -117,6 +119,7 @@ void TQAudio::ma_data_callback(ma_device *pDevice, void *pOutput, const void *pI
 	if (tqaudio != NULL) {
 		ma_engine_read_pcm_frames(&tqaudio->engine, pOutput, frameCount, NULL);
 		tqaudio->clock->measure();
+		tqaudio->emit_signal("audio_data_callback");
 	}
 }
 
